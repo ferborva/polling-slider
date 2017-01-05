@@ -31,13 +31,30 @@ module.exports = function(io) {
 
     socket.on('sendQuestion', function(data) {
       console.log('NEW QUESTION::', data.q);
-      handleNewQuestion();
+      handleNewQuestion(data.q);
+      checkQuestionStatus(socket);
       socket.emit('questionReceived');
-    })
+    });
+
   });
 }
 
 
-var handleNewQuestion = function() {
-  
+var handleNewQuestion = function(data) {
+  var newId = uuid();
+  questionQueue.push({
+    id: newId,
+    q:  data
+  });
 }
+
+
+var checkQuestionStatus = function(socket) {
+  if (!activeQuestion) {
+
+  }
+}
+
+setInterval(function() {
+  slider.emit('average');
+}, 1000);

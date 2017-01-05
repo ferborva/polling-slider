@@ -63,7 +63,11 @@ setupServerListeners = function(server){
 
   server.on('questionReceived', function() {
     console.log('Question received correctly');
-  })
+  });
+
+  server.on('average', function() {
+    console.log('average call')
+  });
 }
 
 var registerToServer = function() {
