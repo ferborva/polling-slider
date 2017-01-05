@@ -13,9 +13,10 @@ console.log(' ');
 
 
 
-var userFingerPrint = '';
+var userFingerPrint = null;
 var currentSliderValue = 0;
 var ioServer = '';
+var currentQuestion = {};
 
 var slider = document.getElementById('slider');
 
@@ -47,8 +48,42 @@ window.addEventListener("load", function(event) {
 
 
 setupServerListeners = function(server){
-  server.on('message', function(data){
-    // Log a message from the sever. Simple connection check
-    console.log(data);
+  server.on('connected', function(data){
+    registerToServer();
   });
+
+  server.on('newQuestion', function(data) {
+    handleNewQuestion(data);
+  });
+
+  server.on('questionTransition', function() {
+    currentQuestion = {};
+    console.log('You have to wait for a new question to be posed!');
+  });
+
+  server.on('questionReceived', function() {
+    console.log('Question received correctly');
+  })
+}
+
+var registerToServer = function() {
+  if (userFingerPrint) {
+    ioServer.emit('register', {
+      fp: userFingerPrint
+    });
+  }
+}
+
+var sendNewQuestion = function() {
+  var input = document.getElementById('question-input');
+  if (input.value) {
+    ioServer.emit('sendQuestion', {
+      q: input.value
+    });
+    input.value = '';
+  }
+}
+
+var handleNewQuestion = function(data) {
+  console.log(data);
 }
