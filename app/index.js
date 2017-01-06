@@ -25,9 +25,11 @@ const getQuestionHistory = () => Task.of(questionHistory)
 
 const getActiveQuestion = () => Task.of(activeQuestion)
 
+const traceLog = (txt) => console.log(txt)
+
 const sendInitAndData = (socket) => {
   traceLog('NEW USER:: New Socket setup');
-  const history = getQuestionHistory().map(R.take(10)).fork(console.error, R.identity)
+  const history = getQuestionHistory().map(R.take(10)).fork(() => { return [] }, R.identity)
 
   socket.emit('connected', {
     msg: 'Server socket setup correctly.',
@@ -75,7 +77,6 @@ module.exports = function(io) {
   slider.on('connection', handleSocketConnection);
 }
 
-const traceLog = (txt) => console.log(txt)
 
 var handleSentQuestion = function(data, cb) {
   console.log('NEW QUESTION::', data.q);
@@ -113,23 +114,6 @@ var checkQuestionStatus = function() {
     sendNextQuestion();
   }
 }
-
-setInterval(function() {
-  if (activeQuestion && !checkEndOfQuestion()) {
-    var data = calculateAnswerData();
-    slider.emit('answers', {answersArray: data});
-  } else if (activeQuestion && checkQuestionStatus) {
-    var data = activeQuestion;
-    data.answers = calculateAnswerData();
-    questionHistory.unshift(activeQuestion)
-    activeQuestion = null;
-    slider.emit('questionTransition', {
-      history: questionHistory.slice(0,10)
-    });
-  } else {
-    checkQuestionStatus();
-  }
-}, 1000);
 
 var checkEndOfQuestion = function() {
   var time = new Date();
@@ -170,3 +154,21 @@ var getServerTime = function() {
   var d = new Date();
   return d.getTime();
 }
+
+// Control Loop
+setInterval(function() {
+  if (activeQuestion && !checkEndOfQuestion()) {
+    var data = calculateAnswerData();
+    slider.emit('answers', {answersArray: data});
+  } else if (activeQuestion && checkQuestionStatus) {
+    var data = activeQuestion;
+    data.answers = calculateAnswerData();
+    questionHistory.unshift(activeQuestion)
+    activeQuestion = null;
+    slider.emit('questionTransition', {
+      history: questionHistory.slice(0,10)
+    });
+  } else {
+    checkQuestionStatus();
+  }
+}, 1000);
