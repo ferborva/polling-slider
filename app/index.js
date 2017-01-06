@@ -1,5 +1,7 @@
 const socketIo = require('socket.io');
 const uuid = require('uuid/v4');
+const Either = require('data.either');
+const R = require('ramda');
 
 let slider;
 
@@ -11,41 +13,64 @@ let activeQuestion = null;
 
 module.exports = function(io) {
   slider = io.of('slider');
-  slider.on('connection', function(socket) {
-    console.log('NEW USER:: New Socket setup');
-    socket.emit('connected', {
-      msg: 'Server socket setup correctly.',
+  slider.on('connection', handleSocketConnection);
+}
+
+var handleSocketConnection = function(socket) {
+
+  verifyUserConnection(socket);
+
+  socket.on('register', function(data) {
+    handleRegistration(data, socket);
+  });
+
+  socket.on('sendQuestion', function(data) {
+    handleSentQuestion(data);
+    socket.emit('questionReceived');
+  });
+
+  socket.on('myAnswer', handleNewAnswer);
+}
+
+const handleRegistration = (data, socket) => {
+  users[data.fp] = socket;
+  traceLog(`USER REGISTRATION:: ${data.fp}`);
+
+  const verified = Either.fromNullable(activeQuestion)
+
+  return verified.fold((e) => {
+    socket.emit('questionTransition', {
       history: questionHistory.slice(0,10)
     });
+  }, (x) => {
+    socket.emit('newQuestion', {
+      id: x.id,
+      q: x.q,
+      end: x.end,
+      sTime: getServerTime()
+    });
+  });
+}
 
-    socket.on('register', function(data, callback) {
-      console.log('USER REGISTRATION::', data.fp);
-      users[data.fp] = socket;
-      if (activeQuestion) {
-        socket.emit('newQuestion', {
-          id: activeQuestion.id,
-          q: activeQuestion.q,
-          end: activeQuestion.end,
-          sTime: getServerTime()
-        });
-      } else {
-        socket.emit('questionTransition', {
-      history: questionHistory.slice(0,10)
-    });
-      }
-    });
+const traceLog = (txt) => console.log(txt)
 
-    socket.on('sendQuestion', function(data) {
-      console.log('NEW QUESTION::', data.q);
-      handleNewQuestion(data.q);
-      checkQuestionStatus();
-      socket.emit('questionReceived');
-    });
+var handleSentQuestion = function(data) {
+  console.log('NEW QUESTION::', data.q);
+  handleNewQuestion(data.q);
+  checkQuestionStatus();
+}
 
-    socket.on('myAnswer', function(data) {
-      console.log('USER ANSWER:: New answer received');
-      activeQuestion.answers[data.fp] = data.value;
-    });
+var handleNewAnswer = function(data) {
+  console.log('USER ANSWER:: New answer received');
+  activeQuestion.answers[data.fp] = data.value;
+}
+
+
+var verifyUserConnection = function(socket) {
+  console.log('NEW USER:: New Socket setup');
+  socket.emit('connected', {
+    msg: 'Server socket setup correctly.',
+    history: questionHistory.slice(0,10)
   });
 }
 
