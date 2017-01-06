@@ -15,7 +15,7 @@ module.exports = function(io) {
     console.log('NEW USER:: New Socket setup');
     socket.emit('connected', {
       msg: 'Server socket setup correctly.',
-      history: questionHistory
+      history: questionHistory.slice(0,10)
     });
 
     socket.on('register', function(data, callback) {
