@@ -22,9 +22,12 @@
           <h5>Send question:</h5>
           <form onsubmit="event.preventDefault(); sendNewQuestion()">
             <input id="question-input" type="text" placeholder="Enter your question here ...">
-            <a class="btn" onclick="sendNewQuestion()">
-              <i class="large material-icons">email</i>
-            </a>
+            <div class="row" style="padding-left: 20px">
+              <a class="btn" onclick="sendNewQuestion()">
+                <i class="large material-icons">email</i>
+              </a>
+              <span id="input-alert"></span>
+            </div>
           </form>
         </div>
 

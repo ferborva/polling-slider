@@ -122,10 +122,6 @@ setupServerListeners = function(server){
     trace('You have to wait for a new question to be posed!');
   });
 
-  server.on('questionReceived', function() {
-    trace('SERVER MSG:: Question received correctly')
-  });
-
   server.on('answers', function(data) {
     trace('SERVER MSG:: New batch of answers received')
     trace('SERVER MSG:: Data received');
@@ -147,10 +143,23 @@ var registerToServer = function() {
 
 var sendNewQuestion = function() {
   var input = document.getElementById('question-input');
+  var cb = function() {
+    trace('SERVER MSG:: Question received correctly');
+    var alert = document.getElementById('input-alert');
+    var div = document.createElement('div');
+    div.className = 'chip';
+    div.innerHTML = `<i class="material-icons">thumb_up</i> Question received!`;
+    alert.appendChild(div);
+    setTimeout(function(){
+      if (alert.firstChild) {
+        alert.removeChild(alert.firstChild);
+      }
+    }, 2500);
+  }
   if (input.value) {
     ioServer.emit('sendQuestion', {
       q: input.value
-    });
+    }, cb);
     input.value = '';
   }
 }

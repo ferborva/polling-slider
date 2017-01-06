@@ -1,36 +1,53 @@
 const socketIo = require('socket.io');
 const uuid = require('uuid/v4');
 const Either = require('data.either');
+const Task = require('data.task');
 const R = require('ramda');
 
+// Module globals
 let slider;
 
+/**
+ * Temporal Cache DB
+ *
+ * Short term solution to keep track of state and data during development
+ */
 let users = {};
-
 let questionQueue = [];
 let questionHistory = [];
 let activeQuestion = null;
 
-module.exports = function(io) {
-  slider = io.of('slider');
-  slider.on('connection', handleSocketConnection);
+const getUserData = (userId) => Task.of(users[userId])
+
+const getQuestionQueue = () => Task.of(questionQueue)
+
+const getQuestionHistory = () => Task.of(questionHistory)
+
+const getActiveQuestion = () => Task.of(activeQuestion)
+
+const sendInitAndData = (socket) => {
+  traceLog('NEW USER:: New Socket setup');
+  const history = getQuestionHistory().map(R.take(10)).fork(console.error, R.identity)
+
+  socket.emit('connected', {
+    msg: 'Server socket setup correctly.',
+    history
+  })
+  return socket
 }
 
-var handleSocketConnection = function(socket) {
-
-  verifyUserConnection(socket);
-
+const setupListeners = (socket) => {
   socket.on('register', function(data) {
     handleRegistration(data, socket);
   });
 
-  socket.on('sendQuestion', function(data) {
-    handleSentQuestion(data);
-    socket.emit('questionReceived');
-  });
+  socket.on('sendQuestion', handleSentQuestion);
 
   socket.on('myAnswer', handleNewAnswer);
 }
+
+const handleSocketConnection = R.compose(setupListeners, sendInitAndData);
+
 
 const handleRegistration = (data, socket) => {
   users[data.fp] = socket;
@@ -52,12 +69,19 @@ const handleRegistration = (data, socket) => {
   });
 }
 
+
+module.exports = function(io) {
+  slider = io.of('slider');
+  slider.on('connection', handleSocketConnection);
+}
+
 const traceLog = (txt) => console.log(txt)
 
-var handleSentQuestion = function(data) {
+var handleSentQuestion = function(data, cb) {
   console.log('NEW QUESTION::', data.q);
   handleNewQuestion(data.q);
   checkQuestionStatus();
+  cb();
 }
 
 var handleNewAnswer = function(data) {
