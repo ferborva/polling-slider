@@ -13,7 +13,10 @@ module.exports = function(io) {
   slider = io.of('slider');
   slider.on('connection', function(socket) {
     console.log('NEW USER:: New Socket setup');
-    socket.emit('connected', 'Server socket setup correctly.');
+    socket.emit('connected', {
+      msg: 'Server socket setup correctly.',
+      history: questionHistory
+    });
 
     socket.on('register', function(data, callback) {
       console.log('USER REGISTRATION::', data.fp);
@@ -21,11 +24,14 @@ module.exports = function(io) {
       if (activeQuestion) {
         socket.emit('newQuestion', {
           id: activeQuestion.id,
-          q: activeQuestion.question,
-          end: activeQuestion.end
+          q: activeQuestion.q,
+          end: activeQuestion.end,
+          sTime: getServerTime()
         });
       } else {
-        socket.emit('questionTransition');
+        socket.emit('questionTransition', {
+      history: questionHistory.slice(0,10)
+    });
       }
     });
 
@@ -64,8 +70,13 @@ setInterval(function() {
     var data = calculateAnswerData();
     slider.emit('answers', {answersArray: data});
   } else if (activeQuestion && checkQuestionStatus) {
+    var data = activeQuestion;
+    data.answers = calculateAnswerData();
+    questionHistory.unshift(activeQuestion)
     activeQuestion = null;
-    slider.emit('questionTransition');
+    slider.emit('questionTransition', {
+      history: questionHistory.slice(0,10)
+    });
   } else {
     checkQuestionStatus();
   }
@@ -79,7 +90,7 @@ var checkEndOfQuestion = function() {
 
 var sendNextQuestion = function() {
   var time = new Date();
-  var millis = time.getTime() + 30000; // Current time plus 30 seconds
+  var millis = time.getTime() + 20000; // Current time plus 20 seconds
   var data = {
     id: questionQueue[0].id,
     q: questionQueue[0].q,
@@ -90,7 +101,8 @@ var sendNextQuestion = function() {
   slider.emit('newQuestion', {
     id: activeQuestion.id,
     q: activeQuestion.q,
-    end: activeQuestion.end
+    end: activeQuestion.end,
+    sTime: getServerTime()
   });
   questionQueue.shift();
 }
@@ -103,4 +115,9 @@ var calculateAnswerData = function() {
     data[allAnswers[ans] - 1] += 1;
   }
   return data;
+}
+
+var getServerTime = function() {
+  var d = new Date();
+  return d.getTime();
 }

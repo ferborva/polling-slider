@@ -17,6 +17,8 @@ var userFingerPrint = null;
 var currentSliderValue = 0;
 var ioServer = '';
 var currentQuestion = null;
+var questionHistory = [];
+var timer = 0;
 
 var slider = document.getElementById('slider');
 var chartCtx = document.getElementById("chart").getContext("2d");
@@ -90,12 +92,14 @@ window.addEventListener("load", function(event) {
 });
 
 var trace = function(txt) {
-  console.log(txt);
+  // console.log(txt);
 }
 
 setupServerListeners = function(server){
   server.on('connected', function(data){
     trace('SERVER MSG:: Connected correctly')
+    questionHistory = data.history;
+    updateHistory();
     registerToServer();
   });
 
@@ -105,10 +109,15 @@ setupServerListeners = function(server){
     handleNewQuestion(data);
   });
 
-  server.on('questionTransition', function() {
+  server.on('questionTransition', function(data) {
+    questionHistory = data.history;
+    updateHistory();
     trace('SERVER MSG:: Transition time')
     currentQuestion = null;
     document.getElementById('question').innerHTML = 'Send in your questions!!!';
+    document.getElementById('seconds').innerHTML = '?';
+    myDoughnutChart.data.datasets[0].data = [0, 0, 1, 0, 0];
+    myDoughnutChart.update();
     slider.noUiSlider.set(3);
     trace('You have to wait for a new question to be posed!');
   });
@@ -150,6 +159,7 @@ var handleNewQuestion = function(data) {
   trace('A Question has been received');
   trace(data);
   currentQuestion = data;
+  setTimer();
   document.getElementById('question').innerHTML = data.q;
   sendMyAnswer();
 }
@@ -157,3 +167,46 @@ var handleNewQuestion = function(data) {
 var sendMyAnswer = function() {
   ioServer.emit('myAnswer', {fp: userFingerPrint, value: currentSliderValue});
 }
+
+var updateHistory = function(){
+  var tbody = document.getElementById('table-body');
+  while(tbody.firstChild) {
+    tbody.removeChild(tbody.firstChild);
+  }
+  questionHistory.forEach(function(item) {
+    trace('History Item:');
+    trace(item);
+    var tr = document.createElement('tr');
+    var td1 = document.createElement('td');
+    td1.innerHTML = item.q;
+    var td2 = document.createElement('td');
+    td2.innerHTML = item.answers[4];
+    var td3 = document.createElement('td');
+    td3.innerHTML = item.answers[3];
+    var td4 = document.createElement('td');
+    td4.innerHTML = item.answers[2];
+    var td5 = document.createElement('td');
+    td5.innerHTML = item.answers[1];
+    var td6 = document.createElement('td');
+    td6.innerHTML = item.answers[0];
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tr.appendChild(td3);
+    tr.appendChild(td4);
+    tr.appendChild(td5);
+    tr.appendChild(td6);
+    tbody.appendChild(tr);
+  })
+}
+
+var setTimer = function() {
+  timer = Math.round((currentQuestion.end - currentQuestion.sTime) / 1000);
+  document.getElementById('seconds').innerHTML = timer;
+}
+
+setInterval(function(){
+  if (currentQuestion) {
+    timer -= 1;
+    document.getElementById('seconds').innerHTML = timer;
+  }
+}, 1000);

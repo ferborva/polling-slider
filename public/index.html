@@ -19,10 +19,23 @@
         </div>
 
         <div class="row">
+          <h5>Send question:</h5>
+          <form onsubmit="event.preventDefault(); sendNewQuestion()">
+            <input id="question-input" type="text" placeholder="Enter your question here ...">
+            <a class="btn" onclick="sendNewQuestion()">
+              <i class="large material-icons">email</i>
+            </a>
+          </form>
+        </div>
+
+        <div class="row">
           <h5>Current Question:</h5>
           <p id="question" class="center-align" style="font-size: 30px">
             Send in your questions!!!
           </p>
+          <div id="timer" class="center-align" style="font-size: 30px">
+            <span id="seconds"></span> seconds left
+          </div>
         </div>
   
         <hr>
@@ -41,23 +54,27 @@
             <canvas id="chart" width="400" height="400"></canvas>
           </div>
         </div>
-        
+        <div class="row"></div>
+        <hr>
+        <hr>
         <div class="row">
-          
+          <table>
+            <thead>
+              <tr>
+                  <th data-field="id">Question</th>
+                  <th data-field="name">Yes</th>
+                  <th data-field="price">Maybe</th>
+                  <th data-field="price">N/A</th>
+                  <th data-field="price">Don't Know</th>
+                  <th data-field="price">No way!</th>
+              </tr>
+            </thead>
+
+            <tbody id="table-body">
+            </tbody>
+          </table>
         </div>
 
-        <div class="row">
-        <hr>
-        <hr>
-        <br>
-          <h5>Send question:</h5>
-          <form>
-            <input id="question-input" type="text" placeholder="Enter your question here ...">
-            <a class="btn" onclick="sendNewQuestion()">
-              <i class="large material-icons">email</i>
-            </a>
-          </form>
-        </div>
     </div>
 
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
