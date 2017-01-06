@@ -13,3 +13,9 @@
   padding: 3px;
   box-shadow: 3px 3px 5px #ddd;
 }
+
+.slider-container {
+  margin-left: 15px !important;
+  box-shadow: 1px 1px 15px;
+  padding: 15px !important;
+}
