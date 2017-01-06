@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/app.css">
     <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
     <script src="https://cdn.jsdelivr.net/fingerprintjs2/1.4.4/fingerprint2.min.js"></script>
+    <script src="/js/chart.js"></script>
 </head>
 
 <body>
@@ -19,25 +20,25 @@
 
         <div class="row">
           <h5>Current Question:</h5>
-          <p id="question" class="center-align">
-            Shik a boom?
+          <p id="question" class="center-align" style="font-size: 30px">
+            Send in your questions!!!
           </p>
         </div>
   
         <hr>
   
-        <div class="row" style="height:500px">
+        <div class="row" style="height:250px">
           <div class="col s2" style="margin-left: 15px">
-            <span><strong>Agree</strong></span>
+            <span><strong>Yes / Agree</strong></span>
             <br>
             <br>
             <div id="slider"></div>
             <br>
             <br>
-            <span><strong>Disagree</strong></span>
+            <span><strong>No / Disagree</strong></span>
           </div>
-          <div class="col s10">
-            <div id="graph"></div>
+          <div class="col s9" style="padding-left: calc(calc(100% - 400px) / 3)">
+            <canvas id="chart" width="400" height="400"></canvas>
           </div>
         </div>
         

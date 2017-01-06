@@ -32,10 +32,14 @@ module.exports = function(io) {
     socket.on('sendQuestion', function(data) {
       console.log('NEW QUESTION::', data.q);
       handleNewQuestion(data.q);
-      checkQuestionStatus(socket);
+      checkQuestionStatus();
       socket.emit('questionReceived');
     });
 
+    socket.on('myAnswer', function(data) {
+      console.log('USER ANSWER:: New answer received');
+      activeQuestion.answers[data.fp] = data.value;
+    });
   });
 }
 
@@ -49,12 +53,54 @@ var handleNewQuestion = function(data) {
 }
 
 
-var checkQuestionStatus = function(socket) {
-  if (!activeQuestion) {
-
+var checkQuestionStatus = function() {
+  if (!activeQuestion && questionQueue.length) {
+    sendNextQuestion();
   }
 }
 
 setInterval(function() {
-  slider.emit('average');
+  if (activeQuestion && !checkEndOfQuestion()) {
+    var data = calculateAnswerData();
+    slider.emit('answers', {answersArray: data});
+  } else if (activeQuestion && checkQuestionStatus) {
+    activeQuestion = null;
+    slider.emit('questionTransition');
+  } else {
+    checkQuestionStatus();
+  }
 }, 1000);
+
+var checkEndOfQuestion = function() {
+  var time = new Date();
+  var currMillis = time.getTime();
+  return activeQuestion.end - currMillis > 0 ? false : true;
+}
+
+var sendNextQuestion = function() {
+  var time = new Date();
+  var millis = time.getTime() + 30000; // Current time plus 30 seconds
+  var data = {
+    id: questionQueue[0].id,
+    q: questionQueue[0].q,
+    end: millis,
+    answers: {}
+  };
+  activeQuestion = data;
+  slider.emit('newQuestion', {
+    id: activeQuestion.id,
+    q: activeQuestion.q,
+    end: activeQuestion.end
+  });
+  questionQueue.shift();
+}
+
+
+var calculateAnswerData = function() {
+  var data = [0, 0, 0, 0, 0];
+  var allAnswers = activeQuestion.answers;
+  for (ans in allAnswers) {
+    data[allAnswers[ans] - 1] += 1;
+  }
+  return data;
+}
