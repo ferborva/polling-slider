@@ -6,3 +6,10 @@
   background: linear-gradient(to bottom,  #29d132 0%,#2989d8 50%,#ce3633 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#29d132', endColorstr='#ce3633',GradientType=0 ); /* IE6-9 */
 }
+
+#question-input {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 3px;
+  box-shadow: 3px 3px 5px #ddd;
+}
