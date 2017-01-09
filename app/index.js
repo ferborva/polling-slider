@@ -28,9 +28,6 @@ const getQuestionQueue = () => Task.of(questionQueue)
 const getQuestionHistory = () => Task.of(questionHistory)
 const getActiveQuestion = () => Task.of(activeQuestion)
 
-// Test helper functions
-const setUsersDB = (collection) => users = collection
-
 const setUserData = R.curry((userId, data) => {
   return new Task((rej, res) => {
     const obj = {
@@ -41,6 +38,9 @@ const setUserData = R.curry((userId, data) => {
     res(obj);
   })
 })
+
+// Test helper functions
+const setUsersDB = (collection) => users = collection
 
 const traceLog = (txt) => console.log(txt)
 
@@ -192,5 +192,6 @@ setInterval(function() {
 module.exports = {
   init,
   getUserData,
+  setUserData,
   setUsersDB
 }
