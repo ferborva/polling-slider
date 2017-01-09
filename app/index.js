@@ -17,15 +17,34 @@ let questionQueue = [];
 let questionHistory = [];
 let activeQuestion = null;
 
-const getUserData = (userId) => Task.of(users[userId])
-
+// DB Management Tasks
+const getUserData = (userId) => {
+  return new Task((rej, res) => {
+    const val = users[userId]
+    val ? res(val) : rej('User not found')
+  })
+}
 const getQuestionQueue = () => Task.of(questionQueue)
-
 const getQuestionHistory = () => Task.of(questionHistory)
-
 const getActiveQuestion = () => Task.of(activeQuestion)
 
+// Test helper functions
+const setUsersDB = (collection) => users = collection
+
+const setUserData = R.curry((userId, data) => {
+  return new Task((rej, res) => {
+    const obj = {
+      id: userId,
+      socket: data
+    };
+    users[userId] = obj;
+    res(obj);
+  })
+})
+
 const traceLog = (txt) => console.log(txt)
+
+const getServerTime = () => new Date().getTime()
 
 const sendInitAndData = (socket) => {
   traceLog('NEW USER:: New Socket setup');
@@ -35,7 +54,7 @@ const sendInitAndData = (socket) => {
     msg: 'Server socket setup correctly.',
     history
   })
-  return socket
+  return socket;
 }
 
 const setupListeners = (socket) => {
@@ -52,7 +71,8 @@ const handleSocketConnection = R.compose(setupListeners, sendInitAndData);
 
 
 const handleRegistration = (data, socket) => {
-  users[data.fp] = socket;
+  // users[data.fp] = socket;
+  setUserData(data.fp, {socket}).fork(console.error, console.log);
   traceLog(`USER REGISTRATION:: ${data.fp}`);
 
   const verified = Either.fromNullable(activeQuestion)
@@ -72,7 +92,7 @@ const handleRegistration = (data, socket) => {
 }
 
 
-module.exports = function(io) {
+const init = function(io) {
   slider = io.of('slider');
   slider.on('connection', handleSocketConnection);
 }
@@ -150,11 +170,6 @@ var calculateAnswerData = function() {
   return data;
 }
 
-var getServerTime = function() {
-  var d = new Date();
-  return d.getTime();
-}
-
 // Control Loop
 setInterval(function() {
   if (activeQuestion && !checkEndOfQuestion()) {
@@ -172,3 +187,10 @@ setInterval(function() {
     checkQuestionStatus();
   }
 }, 1000);
+
+
+module.exports = {
+  init,
+  getUserData,
+  setUsersDB
+}

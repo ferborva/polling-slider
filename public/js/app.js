@@ -109,18 +109,7 @@ setupServerListeners = function(server){
     handleNewQuestion(data);
   });
 
-  server.on('questionTransition', function(data) {
-    questionHistory = data.history;
-    updateHistory();
-    trace('SERVER MSG:: Transition time')
-    currentQuestion = null;
-    document.getElementById('question').innerHTML = 'Send in your questions!!!';
-    document.getElementById('seconds').innerHTML = '?';
-    myDoughnutChart.data.datasets[0].data = [0, 0, 1, 0, 0];
-    myDoughnutChart.update();
-    slider.noUiSlider.set(3);
-    trace('You have to wait for a new question to be posed!');
-  });
+  server.on('questionTransition', handleQuestionTransition);
 
   server.on('answers', function(data) {
     trace('SERVER MSG:: New batch of answers received')
@@ -131,6 +120,19 @@ setupServerListeners = function(server){
       myDoughnutChart.update();
     }
   });
+}
+
+var handleQuestionTransition = function(data) {
+  questionHistory = data.history;
+  updateHistory();
+  trace('SERVER MSG:: Transition time')
+  currentQuestion = null;
+  document.getElementById('question').innerHTML = 'Send in your questions!!!';
+  document.getElementById('seconds').innerHTML = '?';
+  myDoughnutChart.data.datasets[0].data = [0, 0, 1, 0, 0];
+  myDoughnutChart.update();
+  slider.noUiSlider.set(3);
+  trace('You have to wait for a new question to be posed!');
 }
 
 var registerToServer = function() {

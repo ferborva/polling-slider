@@ -38,7 +38,7 @@ app.get('/', function(req, res) {
   res.sendFile(__dirname + '/public/index.html');
 });
 
-appModule(io);
+appModule.init(io);
 
 server.listen(argv.port, function() {
   console.log('server up and running at %s port', argv.port);
