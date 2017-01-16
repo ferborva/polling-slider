@@ -107,7 +107,9 @@ var handleSentQuestion = function(data, cb) {
 
 var handleNewAnswer = function(data) {
   console.log('USER ANSWER:: New answer received');
-  activeQuestion.answers[data.fp] = data.value;
+  if (activeQuestion && activeQuestion.answers) {
+    activeQuestion.answers[data.fp] = data.value;
+  }
 }
 
 
