@@ -4,7 +4,8 @@
   "description": "Polling slider tool",
   "main": "server.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "start": "node server.js --port 8081"
   },
   "repository": {
     "type": "git",
